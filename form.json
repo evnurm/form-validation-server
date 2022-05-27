@@ -1,0 +1,78 @@
+{
+  "name": "person",
+  "fields": [
+    {
+      "name": "firstName",
+      "type": "text",
+      "html": {
+        "label": "First name",
+        "placeholder": "First name"
+      },
+      "constraints": {
+        "maxlength": 10
+      }
+    },
+    {
+      "name": "lastName",
+      "type": "text",
+      "html": {
+        "label": "Last name",
+        "placeholder": "Last name"
+      },
+      "constraints": {
+        "maxlength": 10
+      }
+    },
+    {
+      "name": "age",
+      "html": {
+        "label": "Age",
+        "placeholder": "Age"
+      },
+      "type": "number",
+      "constraints": {
+        "min": 18,
+        "max": 100
+      }
+    },
+    {
+      "name": "gender",
+      "type": "radio",
+      "html": {
+        "label": "Gender",
+        "placeholder": "Gender"
+      },
+      "constraints": {
+        "oneOf": [
+          "M",
+          "F"
+        ]
+      }
+    },
+    {
+      "name": "ssn",
+      "type": "text",
+      "html": {
+        "label": "Social Security Number",
+        "placeholder": "123456-123K"
+      },
+      "constraints": {
+        "required": true,
+        "functions": [
+          "validateSsn"
+        ]
+      }
+    },
+    {
+      "name": "postal-code",
+      "type": "text",
+      "html": {
+        "label": "Social Security Number",
+        "placeholder": "123456-123K"
+      },
+      "constraints": {
+        "pattern": "[0-9]{5}"
+      }
+    }
+  ]
+}
