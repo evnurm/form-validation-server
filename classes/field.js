@@ -7,10 +7,10 @@ class Field {
     this.type = specification.type;
     this.constraints = specification.constraints;
     this.validate = this.validate.bind(this);
-    this.errors = [];
   }
 
   validate(value) {
+    const errors = [];
     const constraintValidities = Object.keys(this.constraints)
       .filter(constraint => constraint !== 'functions')
       .map(constraint => {
@@ -18,20 +18,20 @@ class Field {
         const constraintValue = this.constraints[constraint];
         const result = (typeof validator === 'function') ? validator({ type: this.type, value, constraintValue }) : false;
         if (!result) {
-          this.errors.push(constraint);
+          errors.push(constraint);
         }
         return result;
       });
-    
-      constraintValidities.concat(this.constraints['functions']?.map(func => {
-          const result = getFunction(func)(value);
-          if (!result) {
-            this.errors.push(func);
-          }
-          return result;
-      }));
 
-    return constraintValidities.every(isValid => isValid);
+    constraintValidities.concat(this.constraints['functions']?.map(func => {
+      const result = getFunction(func)(value);
+      if (!result) {
+        errors.push(func);
+      }
+      return result;
+    }));
+
+    return { validity: constraintValidities.every(isValid => isValid), errors };
   }
 }
 

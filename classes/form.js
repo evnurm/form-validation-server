@@ -9,14 +9,17 @@ class Form {
 
     this.#fields = specification.fields.map(field => new Field(field));
     this.validate = this.validate.bind(this);
-    this.errors = [];
   }
 
   validate(formData) {
-    const validations = this.#fields.map(field => field.validate(formData[field.name]));
-    this.#fields.forEach(field => this.errors.push({ [field.name]: field.errors }));
-    const isValid = validations.every(isValid => isValid);
-    return isValid;
+    const errors = {};
+    const validations = this.#fields.map(field => {
+      const validityState = field.validate(formData[field.name]);
+      if (validityState.errors.length > 0) errors[field.name] = validityState.errors;
+      return validityState.validity;
+    });
+    const validity = validations.every(isValid => isValid);
+    return { validity, errors };
   }
 }
 
