@@ -31,7 +31,7 @@
       },
       "type": "number",
       "constraints": {
-        "min": 18,
+        "min": 15,
         "max": 100
       }
     },
@@ -58,6 +58,26 @@
       },
       "constraints": {
         "required": true,
+        "functions": [
+          "validateSsn"
+        ]
+      }
+    },
+    {
+      "name": "guardian",
+      "type": "text",
+      "html": {
+        "label": "Social Security Number of Guardian",
+        "placeholder": "123456-123K"
+      },
+      "constraints": {
+        "required": [
+          {
+            "type": "max",
+            "field": "age",
+            "value": 18
+          }
+        ],
         "functions": [
           "validateSsn"
         ]

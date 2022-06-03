@@ -9,7 +9,7 @@ const registerFunction = (name, func) => {
 
 const getFunction = (name) => {
     if (name && functions[name]) {
-         return functions[name];
+        return functions[name];
     }
     throw new Error(`Custom validator with name '${name} has not been registered`);
 };

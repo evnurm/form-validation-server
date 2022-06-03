@@ -106,7 +106,26 @@ const validateOneOf = ({ value, constraintValue, type }) => {
   }
 };
 
-const validateRequired = ({ value }) => Boolean(value);
+const validateRequired = ({ value, constraintValue, dependencies }) => {
+  // Handle boolean values
+  if (typeof constraintValue === 'boolean') {
+    return constraintValue ? Boolean(value) : true;
+  }
+
+  // Handle array of conditions for a field being required
+  const constraintValidities = constraintValue.map(constraint => {
+    const { type, value, field } = constraint;
+    const func = validators[type];
+    const dependency = dependencies[field];
+    return func({ value, constraintValue: dependency['value'], type: dependency['fieldType'] });
+  });
+
+  const allValid = constraintValidities.every(validity => validity);
+  if (!allValid) {
+    return Boolean(value);
+  }
+  return true;
+};
 
 const validators = {
   'maxlength': validateMaxLength,

@@ -1,37 +1,90 @@
-const validators = require("../validators");
+const validators = require('../validators');
+const typeValidators = require('../typeValidators');
 const { getFunction } = require('../functions');
 
+const getDependencies = (specification) => {
+  const required = specification?.constraints['required'];
+  if (Array.isArray(required)) {
+    return required.map(constraint => constraint.field).filter(dep => dep);
+  }
+};
+
+const checkRequiredValidity = (value, requiredCondition, dependencies) => {
+  if (!requiredCondition)
+    return true;
+  
+  const validator = validators['required'];
+  return validator({value, constraintValue: requiredCondition, dependencies});
+}
+
+const checkTypeValidity = (type, value) => {
+  const typeValidator = typeValidators[type];
+
+  if (typeof typeValidator === 'function') {
+    return typeValidator(value);
+
+  }
+  return false;
+}
+
+const checkConstraintValidity = (type, value, constraints, dependencies, errors) => {
+  return Object.keys(constraints)
+    .filter(constraint => !['functions', 'required'].includes(constraint))
+    .map(constraint => {
+      const validator = validators[constraint];
+      const constraintValue = constraints[constraint];
+      const result = (typeof validator === 'function') ? validator({ type, value, constraintValue, dependencies }) : false;
+      if (!result) {
+        errors.push(constraint);
+      }
+      return result;
+    });
+};
+
+const checkFunctionValidity = (constraints, value, errors) => {
+  return constraints['functions']?.map(func => {
+    const result = getFunction(func)(value);
+    if (!result) {
+      errors.push(func);
+    }
+    return result;
+  });
+};
+
 class Field {
-  constructor(specification) {
+  constructor(specification, form) {
+    this.form = form;
     this.name = specification.name;
     this.type = specification.type;
     this.constraints = specification.constraints;
     this.validate = this.validate.bind(this);
+    this.dependencies = getDependencies(specification) || [];
   }
 
-  validate(value) {
+  validate(value, dependencies) {
     const errors = [];
-    const constraintValidities = Object.keys(this.constraints)
-      .filter(constraint => constraint !== 'functions')
-      .map(constraint => {
-        const validator = validators[constraint];
-        const constraintValue = this.constraints[constraint];
-        const result = (typeof validator === 'function') ? validator({ type: this.type, value, constraintValue }) : false;
-        if (!result) {
-          errors.push(constraint);
-        }
-        return result;
-      });
 
-    constraintValidities.concat(this.constraints['functions']?.map(func => {
-      const result = getFunction(func)(value);
-      if (!result) {
-        errors.push(func);
+    const requiredValidity = checkRequiredValidity(value, this.constraints?.required, dependencies);
+
+    if (!requiredValidity) {
+      errors.push('required');
+    }   
+
+    let validity = requiredValidity;
+
+    if (value) {
+      
+      if (!checkTypeValidity(this.type, value)) {
+        errors.push('type');
       }
-      return result;
-    }));
 
-    return { validity: constraintValidities.every(isValid => isValid), errors };
+      const constraintValidities = checkConstraintValidity(this.type, value, this.constraints, dependencies, errors);
+      const functionConstraintValidities = checkFunctionValidity(this.constraints, value, errors);
+      const validities = constraintValidities.concat(functionConstraintValidities);
+      validity = validities.every(isValid => isValid);
+    }
+
+    return { validity, errors };
   }
 }
 

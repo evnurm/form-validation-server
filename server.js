@@ -11,8 +11,7 @@ app.use(express.json());
 app.post('/form', (req, res) => {
     const form = formValidator.getForm('person');
     const validity = form.validate(req.body);
-    const { errors } = form;
-    return res.json({ validity, errors });
+    return res.json(validity);
 });
 
 app.listen(PORT, () => {
