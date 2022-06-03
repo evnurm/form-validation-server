@@ -1,4 +1,4 @@
-const { INPUT_TYPES } = require('./form-input-types');
+const { INPUT_TYPES } = require('../form-input-types');
 
 const validateStringMaxLength = (value, limit) => {
   return value?.length <= limit;

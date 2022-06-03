@@ -1,4 +1,4 @@
-const { INPUT_TYPES } = require('./form-input-types');
+const { INPUT_TYPES } = require('../form-input-types');
 
 const validateText = (value) => typeof value === 'string';
 

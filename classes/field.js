@@ -1,5 +1,5 @@
-const validators = require('../validators');
-const typeValidators = require('../typeValidators');
+const validators = require('../validators/validators');
+const typeValidators = require('../validators/typeValidators');
 const { getFunction } = require('../functions');
 
 const getDependencies = (specification) => {
