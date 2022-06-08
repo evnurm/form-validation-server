@@ -101,13 +101,13 @@ describe('validators', () => {
   describe('min', () => {
     const minValidator = validators['min'];
     
-    it('should validate number max correctly', () => {
+    it('should validate number min correctly', () => {
       expect(minValidator({ value: 4, constraintValue: 5, type: 'number'})).toBe(false);
       expect(minValidator({ value: 5, constraintValue: 5, type: 'number'})).toBe(true);
       expect(minValidator({ value: 6, constraintValue: 5, type: 'number'})).toBe(true);
     });
 
-    it('should validate date max correctly', () => {
+    it('should validate date min correctly', () => {
       expect(minValidator({ value: '2022-06-03T15:19:00.176Z', constraintValue: '2022-06-03T15:20:00.176Z', type: 'date'})).toBe(false);
       expect(minValidator({ value: '2022-06-03T15:20:00.176Z', constraintValue: '2022-06-03T15:20:00.176Z', type: 'date'})).toBe(true);
       expect(minValidator({ value: '2022-06-03T15:21:00.176Z', constraintValue: '2022-06-03T15:20:00.176Z', type: 'date'})).toBe(true);

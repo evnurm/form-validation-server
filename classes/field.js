@@ -1,6 +1,6 @@
 const validators = require('../validators/validators');
 const typeValidators = require('../validators/typeValidators');
-const { getFunction } = require('../functions');
+const { getFunction } = require('../functionStore/functions');
 
 const getDependencies = (specification) => {
   const required = specification?.constraints['required'];
@@ -42,13 +42,13 @@ const checkConstraintValidity = (type, value, constraints, dependencies, errors)
 };
 
 const checkFunctionValidity = (constraints, value, errors) => {
-  return constraints['functions']?.map(func => {
+  return (constraints['functions']?.map(func => {
     const result = getFunction(func)(value);
     if (!result) {
       errors.push(func);
     }
     return result;
-  });
+  })) || [];
 };
 
 class Field {
@@ -65,7 +65,6 @@ class Field {
     const errors = [];
 
     const requiredValidity = checkRequiredValidity(value, this.constraints?.required, dependencies);
-
     if (!requiredValidity) {
       errors.push('required');
     }   

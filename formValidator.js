@@ -1,6 +1,6 @@
 const Form = require('./classes/form');
 const formSpec = require('./form.json');
-const { registerFunction } = require('./functions');
+const { registerFunction } = require('./functionStore/functions');
 
 const forms = { [formSpec.name]: new Form(formSpec) };
 

@@ -117,14 +117,11 @@ const validateRequired = ({ value, constraintValue, dependencies }) => {
     const { type, value, field } = constraint;
     const func = validators[type];
     const dependency = dependencies[field];
-    return func({ value, constraintValue: dependency['value'], type: dependency['fieldType'] });
+    return func({ value: dependency?.value, constraintValue: value, type: dependency['fieldType'] });
   });
-
   const allValid = constraintValidities.every(validity => validity);
-  if (!allValid) {
-    return Boolean(value);
-  }
-  return true;
+  
+  return !allValid ? true : Boolean(value);
 };
 
 const validators = {
