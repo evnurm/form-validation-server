@@ -8,9 +8,9 @@ formValidator.registerFunction('validateSsn', validateSsn);
 
 app.use(express.json());
 
-app.post('/form', (req, res) => {
+app.post('/form', async (req, res) => {
     const form = formValidator.getForm('person');
-    const validity = form.validate(req.body);
+    const validity = await form.validate(req);
     return res.json(validity);
 });
 
