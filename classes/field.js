@@ -3,7 +3,7 @@ const typeValidators = require('../validators/typeValidators');
 const { getFunction } = require('../functionStore/functions');
 
 const getDependencies = (specification) => {
-  const required = specification?.constraints['required'];
+  const required = specification?.constraints?.required;
   if (Array.isArray(required)) {
     return required.map(constraint => constraint.field).filter(dep => dep);
   }
@@ -28,6 +28,8 @@ const checkTypeValidity = (type, value) => {
 }
 
 const checkConstraintValidity = (type, value, constraints, dependencies, errors) => {
+  if (!constraints) return [ true ];
+
   return Object.keys(constraints)
     .filter(constraint => !['functions', 'required'].includes(constraint))
     .map(constraint => {
@@ -42,6 +44,8 @@ const checkConstraintValidity = (type, value, constraints, dependencies, errors)
 };
 
 const checkFunctionValidity = (constraints, value, errors) => {
+  if (!constraints) return [ true ];
+
   return (constraints['functions']?.map(func => {
     const result = getFunction(func)(value);
     if (!result) {
