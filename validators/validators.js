@@ -20,7 +20,7 @@ const validateStepNumber = (value, step, min) => {
   if (!min) {
     return value % step === 0;
   }
-  return (value - min) % step === 0; 
+  return (value - min) % step === 0;
 };
 
 const validateMaxDate = (value, limit) => {
@@ -99,12 +99,24 @@ const validatePattern = ({ value, constraintValue, type }) => {
   }
 };
 
-const validateOneOf = ({ value, constraintValue, type }) => {
+const validateValuesInSet = (value, constraintValue) => {
+  const allowedValues = constraintValue.map(option => option.value);
+  return value.every(val => allowedValues.includes(val));
+};
+
+
+// oneOf = one of the options provided in constraintValue
+const validateOneOf = (value, constraintValue) => constraintValue.map(option => option.value).includes(value);
+
+
+const validateValues = ({ value, constraintValue, type }) => {
   switch (type) {
-    case INPUT_TYPES.RADIO: return constraintValue.includes(value);
-    default: throw new Error('oneOf constraint is not supported for type ' + type);
+    case INPUT_TYPES.RADIO_GROUP: return validateOneOf(value, constraintValue);
+    case INPUT_TYPES.CHECKBOX_GROUP: return validateValuesInSet(value, constraintValue);
+    default: throw new Error('values constraint is not supported for type ' + type);
   }
 };
+
 
 const validateRequired = ({ value, constraintValue, dependencies }) => {
   // Handle boolean values
@@ -120,7 +132,7 @@ const validateRequired = ({ value, constraintValue, dependencies }) => {
     return func({ value: dependency?.value, constraintValue: value, type: dependency['fieldType'] });
   });
   const allValid = constraintValidities.every(validity => validity);
-  
+
   return !allValid ? true : Boolean(value);
 };
 
@@ -131,7 +143,7 @@ const validators = {
   'min': validateMin,
   'step': validateStep,
   'pattern': validatePattern,
-  'oneOf': validateOneOf,
+  'values': validateValues,
   'required': validateRequired
 };
 

@@ -37,15 +37,21 @@
     },
     {
       "name": "gender",
-      "type": "radio",
+      "type": "radio-group",
       "html": {
         "label": "Gender",
         "placeholder": "Gender"
       },
       "constraints": {
-        "oneOf": [
-          "M",
-          "F"
+        "values": [
+          {
+            "label": "Male",
+            "value": "M"
+          },
+          {
+            "label": "Female",
+            "value": "F"
+          }
         ]
       }
     },

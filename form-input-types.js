@@ -1,6 +1,7 @@
 const INPUT_TYPES = {
   BUTTON: 'button',
   CHECKBOX: 'checkbox',
+  CHECKBOX_GROUP: 'checkbox-group',
   COLOR: 'color',
   DATE: 'date',
   DATETIME_LOCAL: 'datetime-local',
@@ -11,7 +12,7 @@ const INPUT_TYPES = {
   MONTH: 'month',
   NUMBER: 'number',
   PASSWORD: 'password',
-  RADIO: 'radio',
+  RADIO_GROUP: 'radio-group',
   RANGE: 'range',
   RESET: 'reset',
   SEARCH: 'search',

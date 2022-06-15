@@ -117,7 +117,7 @@ describe('validators', () => {
   describe('step', () => {
     const stepValidator = validators['step'];
 
-    it('should should validate number step correctly', () => {
+    it('should validate number step correctly', () => {
       expect(stepValidator({ value: 10, constraintValue: 2, type: 'number'})).toBe(true);
       expect(stepValidator({ value: 10, constraintValue: 3, type: 'number'})).toBe(false);
 
@@ -131,6 +131,25 @@ describe('validators', () => {
     it('should correctly compare a string to a regular expression', () => {
       const regexString = '[a-zA-Z]\d';
       expect(patternValidator({ value: 'A5034', constraintValue: regexString, type: 'text' })).toBe(new RegExp(regexString).test('A5034'));
+    });
+  });
+
+  describe('values', () => {
+    const valuesValidator = validators['values'];
+
+    it('should correctly validate a radio group', () => {
+      const constraintValue = [{ label: 'Option 1', value: 'option1'}, { label: 'Option 2', value: 'option2'}];
+      expect(valuesValidator({ value: 'a', constraintValue, type: 'radio-group'})).toBe(false); // invalid option
+      expect(valuesValidator({ value: 'option1', constraintValue, type: 'radio-group'})).toBe(true); // valid option
+
+      expect(valuesValidator({ value: ['option1', 'option2'], constraintValue, type: 'radio-group'})).toBe(false) // invalid - multiple "valid" options
+    });
+
+    it('should correctly validate a checkbox group', () => {
+      const constraintValue = [{ label: 'Option 1', value: 'option1'}, { label: 'Option 2', value: 'option2'}];
+      expect(valuesValidator({ value: ['test'], constraintValue, type: 'checkbox-group'})).toBe(false); // invalid option
+      expect(valuesValidator({ value: ['option1'], constraintValue, type: 'checkbox-group'})).toBe(true); // valid option
+      expect(valuesValidator({ value: ['option1', 'option2'], constraintValue, type: 'checkbox-group'})).toBe(true); // multiple valid options
     });
   });
 });
