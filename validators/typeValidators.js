@@ -43,6 +43,13 @@ const validateURL = (value) => {
     }
 };
 
+const validateColor = (value) => {
+    if (value?.length != 7) return false;
+    if (value[0] != '#') return false;
+    
+    return !Number.isNaN(Number('0x' + value.substring(1)));
+};
+
 module.exports = {
     [INPUT_TYPES.TEXT]: validateText,
     [INPUT_TYPES.NUMBER]: validateNumber,
@@ -54,5 +61,7 @@ module.exports = {
     [INPUT_TYPES.URL]: validateURL,
     
     // No separate validation: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/tel
-    [INPUT_TYPES.TEL]: validateText
+    [INPUT_TYPES.TEL]: validateText,
+    [INPUT_TYPES.RADIO_GROUP]: () => true,
+    [INPUT_TYPES.COLOR]: validateColor
 };
