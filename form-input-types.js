@@ -7,6 +7,7 @@ const INPUT_TYPES = {
   DATETIME_LOCAL: 'datetime-local',
   EMAIL: 'email',
   FILE: 'file',
+  GROUP: 'group',
   HIDDEN: 'hidden',
   IMAGE: 'image',
   MONTH: 'month',

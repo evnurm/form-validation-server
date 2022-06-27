@@ -68,6 +68,7 @@ const validateMinLength = ({ value, constraintValue, type }) => {
     case INPUT_TYPES.SEARCH:
     case INPUT_TYPES.TEL:
     case INPUT_TYPES.URL:
+    case INPUT_TYPES.GROUP:
       return validateStringMinLength(value, constraintValue);
     default: throw new Error('minlength constraint is not supported for type ' + type);
   }
@@ -81,6 +82,7 @@ const validateMaxLength = ({ value, constraintValue, type }) => {
     case INPUT_TYPES.SEARCH:
     case INPUT_TYPES.TEL:
     case INPUT_TYPES.URL:
+    case INPUT_TYPES.GROUP:
       return validateStringMaxLength(value, constraintValue);
     default: throw new Error('maxlength constraint is not supported for type ' + type);
   }

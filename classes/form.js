@@ -1,5 +1,7 @@
+const { INPUT_TYPES } = require('../form-input-types');
 const { getFunction } = require('../functionStore/functions');
-const Field = require('./field');
+const GroupField = require('./GroupField');
+const SimpleField = require('./SimpleField');
 
 class Form {
   fields = [];
@@ -9,7 +11,9 @@ class Form {
     if (!specification.fields)
       throw new Error('Fields are not specified');
 
-    this.fields = specification.fields.map(field => new Field(field, this));
+    this.fields = specification.fields.map(field => {
+      return field.type === INPUT_TYPES.GROUP ? new GroupField(field) : new SimpleField(field);
+    });
     this.#serverSideValidators = specification.serverSideValidators;
     this.validate = this.validate.bind(this);
   }
