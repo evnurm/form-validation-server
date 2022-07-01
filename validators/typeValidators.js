@@ -50,6 +50,24 @@ const validateColor = (value) => {
     return !Number.isNaN(Number('0x' + value.substring(1)));
 };
 
+const validateCheckboxGroup = (value) => Array.isArray(value) && value.every(entry => typeof entry === 'string');
+
+// Ensure that the value is an array of objects ([{}, ..., {}])
+const validateGroup = (value) => {
+    return Array.isArray(value) && value.every(entry => typeof entry === 'object' && !Array.isArray(entry));
+};
+
+const validateTime = (value) => {
+  if (!validateText(value) || value?.length !== 5 || value[2] !== ':') return false;
+
+  const hour = Number(value.substring(0, 2));
+  const minutes = Number(value.substring(3));
+  const hourIsValid = hour >= 0 && hour <= 23;
+  const minutesIsValid = minutes >= 0 && minutes <= 59; 
+
+  return hourIsValid && minutesIsValid;
+};
+
 module.exports = {
     [INPUT_TYPES.TEXT]: validateText,
     [INPUT_TYPES.NUMBER]: validateNumber,
@@ -63,5 +81,13 @@ module.exports = {
     // No separate validation: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/tel
     [INPUT_TYPES.TEL]: validateText,
     [INPUT_TYPES.RADIO_GROUP]: () => true,
-    [INPUT_TYPES.COLOR]: validateColor
+    [INPUT_TYPES.COLOR]: validateColor,
+    [INPUT_TYPES.TIME]: validateTime,
+    [INPUT_TYPES.PASSWORD]: validateText,
+    [INPUT_TYPES.RANGE]: validateNumber,
+    [INPUT_TYPES.SEARCH]: validateText,
+    [INPUT_TYPES.HIDDEN]: () => true, // no limitations
+    [INPUT_TYPES.GROUP]: validateGroup,
+    [INPUT_TYPES.BUTTON]: () => true,
+    [INPUT_TYPES.CHECKBOX_GROUP]: validateCheckboxGroup
 };

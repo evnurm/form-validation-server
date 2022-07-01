@@ -14,12 +14,13 @@ describe('typeValidators', () => {
 
   describe('number', () => {
     it('validates number correctly', () => {
-      const textValidator = typeValidators['number'];
-      expect(textValidator(3)).toBe(true);
-      expect(textValidator('test')).toBe(false);
-      expect(textValidator()).toBe(false);
-      expect(textValidator({})).toBe(false);
-      expect(textValidator(() => {})).toBe(false);
+      const numberValidator = typeValidators['number'];
+      expect(numberValidator(3)).toBe(true);
+      expect(numberValidator(3.14)).toBe(true);
+      expect(numberValidator('test')).toBe(false);
+      expect(numberValidator()).toBe(false);
+      expect(numberValidator({})).toBe(false);
+      expect(numberValidator(() => {})).toBe(false);
     });
   });
 
@@ -114,6 +115,76 @@ describe('typeValidators', () => {
       expect(colorValidator('#123456')).toBe(true); // valid RGB string with only numbers
       expect(colorValidator('#c0ffee')).toBe(true); // valid alphanumeric RGB string
       expect(colorValidator('#ef14fg')).toBe(false); // invalid RGB string
+    });
+  });
+
+  describe('time', () => {
+    it('validates time correctly', () => {
+      const timeValidator = typeValidators['time'];
+      expect(timeValidator()).toBe(false);
+      expect(timeValidator({})).toBe(false);
+      expect(timeValidator('')).toBe(false);
+      expect(timeValidator('a')).toBe(false);
+      expect(timeValidator('aa:aa')).toBe(false);
+      expect(timeValidator('1')).toBe(false);
+      expect(timeValidator('1:0')).toBe(false);
+      expect(timeValidator('11:0')).toBe(false);
+      expect(timeValidator('11:00')).toBe(true);
+      
+      expect(timeValidator('00:00')).toBe(true);
+      expect(timeValidator('23:59')).toBe(true);
+      expect(timeValidator('23:60')).toBe(false);
+      expect(timeValidator('24:00')).toBe(false);
+    });
+  });
+
+  describe('password', () => {
+    it('validates password correctly', () => {
+      const passwordValidator = typeValidators['password'];
+      expect(passwordValidator('test')).toBe(true);
+      expect(passwordValidator(3)).toBe(false);
+      expect(passwordValidator()).toBe(false);
+      expect(passwordValidator({})).toBe(false);
+      expect(passwordValidator(() => { })).toBe(false);
+    });
+  });
+
+  describe('range', () => {
+    it('validates range correctly', () => {
+      const rangeValidator = typeValidators['range'];
+      expect(rangeValidator(3)).toBe(true);
+      expect(rangeValidator(3.14)).toBe(true);
+      expect(rangeValidator('test')).toBe(false);
+      expect(rangeValidator()).toBe(false);
+      expect(rangeValidator({})).toBe(false);
+      expect(rangeValidator(() => {})).toBe(false);
+    });
+  });
+
+  describe('group', () => {
+    it('validates group correctly', () => {
+      const groupValidator = typeValidators['group'];
+      expect(groupValidator()).toBe(false);
+      expect(groupValidator(null)).toBe(false);
+      expect(groupValidator('a')).toBe(false);
+      expect(groupValidator({})).toBe(false);
+      expect(groupValidator([])).toBe(true);
+      expect(groupValidator([1, 2, 3])).toBe(false);
+      expect(groupValidator(['a', 'b', 'c'])).toBe(false);
+      expect(groupValidator([{}, {}])).toBe(true);
+    });
+  });
+
+  describe('checkbox group', () => {
+    it('validates checkbox group correctly', () => {
+      const checkboxGroupValidator = typeValidators['checkbox-group'];
+      expect(checkboxGroupValidator()).toBe(false);
+      expect(checkboxGroupValidator(null)).toBe(false);
+      expect(checkboxGroupValidator('a')).toBe(false);
+      expect(checkboxGroupValidator({})).toBe(false);
+      expect(checkboxGroupValidator([])).toBe(true);
+      expect(checkboxGroupValidator(['a', 'b', 'c'])).toBe(true);
+      expect(checkboxGroupValidator([{}, {}])).toBe(false);
     });
   });
 });
