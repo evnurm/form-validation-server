@@ -1,16 +1,19 @@
 const validators = require('../validators/validators');
 const typeValidators = require('../validators/typeValidators');
-const { getFunction } = require('../functionStore/functions');
+const functionStore = require('../functionStore/functions');
 
 const getDependencies = (specification) => {
   const required = specification?.constraints?.required;
+  let dependencies = new Set(specification?.dependencies);
   if (Array.isArray(required)) {
-    return required.map(constraint => constraint.field).filter(dep => dep);
+    required.map(constraint => constraint.field).filter(dep => dep).forEach(dep => dependencies.add(dep));
   }
+  return dependencies;
 };
 
 class AbstractField {
   constructor(specification) {
+    this.name = specification.name;
     this.constraints = specification.constraints;
     this.validate = this.validate.bind(this);
     this.dependencies = getDependencies(specification) || [];
@@ -40,7 +43,7 @@ class AbstractField {
     if (!this.constraints) return [ true ];
   
     return Object.keys(this.constraints)
-      .filter(constraint => !['functions', 'required'].includes(constraint))
+      .filter(constraint => !['clientSideFunctions', 'serverSideFunctions', 'required'].includes(constraint))
       .map(constraint => {
         const validator = validators[constraint];
         const constraintValue = this.constraints[constraint];
@@ -52,11 +55,15 @@ class AbstractField {
       });
   };
 
-  #checkFunctionValidity(value, errors) {
+  #checkFunctionValidity(value, dependencies, errors) {
     if (!this.constraints) return [ true ];
-  
-    return (this.constraints['functions']?.map(func => {
-      const result = getFunction(func)(value);
+
+    // Convert dependencies to format { fieldName: fieldValue }
+    const dependencyFieldValues = {};
+    Object.keys(dependencies || {}).forEach(dep => dependencyFieldValues[dep] = dependencies[dep].value);
+
+    return (this.constraints.serverSideFunctions?.map(func => {
+      const result = functionStore.getFunction(func)(value, dependencyFieldValues);
       if (!result) {
         errors.push(func);
       }
@@ -81,7 +88,7 @@ class AbstractField {
       }
 
       const constraintValidities = this.#checkConstraintValidity(value, dependencies, errors);
-      const functionConstraintValidities = this.#checkFunctionValidity(value, errors);
+      const functionConstraintValidities = this.#checkFunctionValidity(value, dependencies, errors);
       const validities = constraintValidities.concat(functionConstraintValidities);
       validity = validities.every(isValid => isValid);
     }

@@ -1,4 +1,5 @@
 const SimpleField = require('./SimpleField');
+const functionStore = require('../functionStore/functions');
 
 const spec = {
   name: "testField",
@@ -86,5 +87,75 @@ describe('SimpleField', () => {
     expect(field.validate(undefined, { age: { value: 17, fieldType: 'number' }, name: { value: 'a'.repeat(10), fieldType: 'text'}}).validity).toBe(true);
     expect(field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(11), fieldType: 'text'}}).validity).toBe(true);
     expect(field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(5), fieldType: 'text'}}).validity).toBe(false);
+  });
+
+  it('validates a single function constraint correctly', () => {
+    jest.spyOn(functionStore, 'getFunction').mockImplementation(() => (value) => {
+      return value.startsWith('X');
+    });
+
+    const specification = {
+      ...spec,
+      constraints: {
+        serverSideFunctions: ['testFunction']
+      }
+    };
+    const field = new SimpleField(specification);
+    expect(field.validate('').validity).toBe(true);
+    expect(field.validate('a').validity).toBe(false);
+    expect(field.validate('aXb').validity).toBe(false);
+    expect(field.validate('X').validity).toBe(true);
+    expect(field.validate('Xabc').validity).toBe(true);
+  });
+
+  it('validates multiple function constraints correctly', () => {
+    const startsWithX = (value) => value.startsWith('X');
+    const endsWithY = (value) => value.endsWith('Y');
+
+    jest.spyOn(functionStore, 'getFunction').mockImplementation((functionName) => {
+      switch (functionName) {
+        case 'startsWithX':
+          return startsWithX;
+        case 'endsWithY':
+          return endsWithY;
+      }
+    });
+
+    const specification = {
+      ...spec,
+      type: 'number',
+      constraints: {
+        serverSideFunctions: ['startsWithX', 'endsWithY']
+      },
+    };
+
+    const field = new SimpleField(specification);
+    expect(field.validate('').validity).toBe(true);
+    expect(field.validate('a').validity).toBe(false);
+    expect(field.validate('aXb').validity).toBe(false);
+    expect(field.validate('X').validity).toBe(false);
+    expect(field.validate('Xabc').validity).toBe(false);
+    expect(field.validate('XabcY').validity).toBe(true);
+    expect(field.validate('XabcYz').validity).toBe(false);
+  });
+
+  it('runs form-level validators correctly', () => {
+    const formLevelValidator = (value, dependencies) => {
+      return dependencies.dependencyField !== value;
+    };
+
+    jest.spyOn(functionStore, 'getFunction').mockImplementation(() => formLevelValidator);
+
+    const specification = {
+      ...spec,
+      constraints: {
+        serverSideFunctions: ['formLevelValidator']
+      },
+      dependencies: ['dependencyField']
+    };
+
+    const field = new SimpleField(specification);
+    expect(field.validate(3, { dependencyField: { type: 'number', value: 3 }}).validity).toBe(false);
+    expect(field.validate(3, { dependencyField: { type: 'number', value: 5 }}).validity).toBe(true);
   });
 });
