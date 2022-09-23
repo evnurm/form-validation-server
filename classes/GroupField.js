@@ -11,22 +11,27 @@ class GroupField extends AbstractField {
     this.#fields = specification.fields.map(fieldSpec => new SimpleField(fieldSpec));
   }
 
-  validate(value, dependencies) {
-    const superValidity = super.validate(value, dependencies);
+  async validate(value, dependencies) {
+    const superValidity = await super.validate(value, dependencies);
   
     if (superValidity.validity && value) {
-      const errors = superValidity.errors;
 
-      const subfieldsAreValid = value.map(val =>
-        this.#fields.map(field => {
-          const validityState = field.validate(val[field.name], dependencies);
-          errors.push(validityState.errors);
-          return validityState.validity;
-        }
-        ).every(isValid => isValid)
-      ).every(isValid => isValid);
+      const validityStates = [];
 
-      return { validity: subfieldsAreValid, errors };
+      for (const groupInstance of value) {
+        validityStates.push(await Promise.all(this.#fields.map(field => field.validate(groupInstance[field.name], dependencies))));
+      }
+      const allValid = validityStates.map(instance => instance.map(field => field.validity).every(valid => valid)).every(valid => valid)
+
+      const groupErrors = [];
+      validityStates.forEach((instance, instanceIndex) => {
+        instance.forEach((field, fieldIndex) => {
+          if (!groupErrors[instanceIndex]) groupErrors[instanceIndex] = {};
+          groupErrors[instanceIndex][this.#fields[fieldIndex].name] = field.errors;
+        });
+        
+      });
+      return { validity: allValid, errors: groupErrors };
     }
 
     return superValidity;

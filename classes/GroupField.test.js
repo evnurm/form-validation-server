@@ -47,35 +47,79 @@ const groupSpec = {
 };
 
 describe('GroupField', () => {
-  it('validates the fields of the group correctly', () => {
+  it('validates the fields of the group correctly', async () => {
     const field = new GroupField(groupSpec);
-    expect(field.validate([
+    
+    const allGivenAndValid = await field.validate([
       { firstName: 'Test', lastName: 'User', age: 26 }
-    ]).validity).toBe(true);
+    ]);
+    expect(allGivenAndValid.validity).toBe(true);
 
-    expect(field.validate([
+    const lastNameMissing = await field.validate([
       { firstName: 'Test', age: 26 }
-    ]).validity).toBe(false);
+    ]);
 
-    expect(field.validate([
+    expect(lastNameMissing.validity).toBe(false);
+    expect(lastNameMissing.errors[0].lastName.length).toBe(1);
+    expect(lastNameMissing.errors[0].lastName[0]).toBe('required');
+
+    const firstNameMissing = await field.validate([
       { lastName: 'User', age: 26 }
-    ]).validity).toBe(false);
+    ]);
 
-    expect(field.validate([
+    expect(firstNameMissing.validity).toBe(false);
+    expect(firstNameMissing.errors[0].firstName.length).toBe(1);
+    expect(firstNameMissing.errors[0].firstName[0]).toBe('required');
+
+
+    const firstNameAndLastNameMissing = await field.validate([
+      { age: 18 }
+    ]);
+    expect(firstNameAndLastNameMissing.validity).toBe(false);
+    expect(firstNameAndLastNameMissing.errors[0].lastName.length).toBe(1);
+    expect(firstNameAndLastNameMissing.errors[0].lastName[0]).toBe('required');
+    expect(firstNameAndLastNameMissing.errors[0].firstName.length).toBe(1);
+    expect(firstNameAndLastNameMissing.errors[0].firstName[0]).toBe('required');
+
+    const namesMissingAndTooYoung = await field.validate([
+      { age: 14 }
+    ]);
+    expect(namesMissingAndTooYoung.validity).toBe(false);
+    expect(namesMissingAndTooYoung.errors[0].lastName.length).toBe(1);
+    expect(namesMissingAndTooYoung.errors[0].lastName[0]).toBe('required');
+    expect(namesMissingAndTooYoung.errors[0].firstName.length).toBe(1);
+    expect(namesMissingAndTooYoung.errors[0].firstName[0]).toBe('required');
+    expect(namesMissingAndTooYoung.errors[0].age.length).toBe(1);
+    expect(namesMissingAndTooYoung.errors[0].age[0]).toBe('min');
+
+    const namesMissingAndTooOld = await field.validate([
+      { age: 126 }
+    ]);
+    expect(namesMissingAndTooOld.validity).toBe(false);
+    expect(namesMissingAndTooOld.errors[0].lastName.length).toBe(1);
+    expect(namesMissingAndTooOld.errors[0].lastName[0]).toBe('required');
+    expect(namesMissingAndTooOld.errors[0].firstName.length).toBe(1);
+    expect(namesMissingAndTooOld.errors[0].firstName[0]).toBe('required');
+    expect(namesMissingAndTooOld.errors[0].age.length).toBe(1);
+    expect(namesMissingAndTooOld.errors[0].age[0]).toBe('max');
+
+
+    const allRequiredGivenAndValid = await field.validate([
       { firstName: 'Test', lastName: 'User' }
-    ]).validity).toBe(true);
+    ]);
+    expect(allRequiredGivenAndValid.validity).toBe(true);
   });
 
-  it('validates multiple instances of the field group', () => {
+  it('validates multiple instances of the field group', async () => {
     const field = new GroupField(groupSpec);
-    expect(field.validate([
+    expect((await field.validate([
       { firstName: 'Test', lastName: 'User', age: 26 },
       { firstName: 'Second', lastName: 'Person', age: 18 }
-    ]).validity).toBe(true);
+    ])).validity).toBe(true);
 
-    expect(field.validate([
+    expect((await field.validate([
       { firstName: 'Test', lastName: 'User', age: 26 },
       { firstName: 'Second', lastName: 'Person', age: 10 }
-    ]).validity).toBe(false);
+    ])).validity).toBe(false);
   });
 });

@@ -55,23 +55,29 @@ class AbstractField {
       });
   };
 
-  #checkFunctionValidity(value, dependencies, errors) {
-    if (!this.constraints) return [ true ];
+  async #checkFunctionValidity(value, dependencies, errors) {
+    if (!this.constraints || !this.constraints?.serverSideFunctions) return [ true ];
 
     // Convert dependencies to format { fieldName: fieldValue }
     const dependencyFieldValues = {};
     Object.keys(dependencies || {}).forEach(dep => dependencyFieldValues[dep] = dependencies[dep].value);
 
-    return (this.constraints.serverSideFunctions?.map(func => {
-      const result = functionStore.getFunction(func)(value, dependencyFieldValues);
+    const validationResults = (
+      await Promise.allSettled(
+        this.constraints?.serverSideFunctions
+          ?.map(func => functionStore.getFunction(func)(value, dependencyFieldValues))
+      )
+    )?.map(({ value }) => value);
+
+    validationResults.forEach((result, funcIndex) => {
       if (!result) {
-        errors.push(func);
+        errors.push(this.constraints.serverSideFunctions[funcIndex]);
       }
-      return result;
-    })) || [];
+    });
+    return validationResults;
   };
 
-  validate(value, dependencies) {
+  async validate(value, dependencies) {
     const errors = [];
 
     const requiredValidity = this.#checkRequiredValidity(value, dependencies);
@@ -88,11 +94,10 @@ class AbstractField {
       }
 
       const constraintValidities = this.#checkConstraintValidity(value, dependencies, errors);
-      const functionConstraintValidities = this.#checkFunctionValidity(value, dependencies, errors);
+      const functionConstraintValidities = await this.#checkFunctionValidity(value, dependencies, errors);
       const validities = constraintValidities.concat(functionConstraintValidities);
       validity = validities.every(isValid => isValid);
     }
-
     return { validity, errors };
   }
 }

@@ -9,6 +9,7 @@
         "placeholder": "First name"
       },
       "constraints": {
+        "required": true,
         "maxlength": 10
       }
     },
@@ -20,6 +21,7 @@
         "placeholder": "Last name"
       },
       "constraints": {
+        "required": true,
         "maxlength": 10
       }
     },
@@ -32,7 +34,7 @@
       "type": "number",
       "constraints": {
         "min": 15,
-        "max": 100
+        "max": 125
       }
     },
     {
@@ -64,7 +66,7 @@
       },
       "constraints": {
         "required": true,
-        "functions": [
+        "serverSideFunctions": [
           "validateSsn"
         ]
       }
@@ -81,24 +83,61 @@
           {
             "type": "max",
             "field": "age",
-            "value": 18
+            "value": 17
           }
         ],
-        "functions": [
-          "validateSsn"
+        "serverSideFunctions": [
+          "validateGuardianSsn"
         ]
-      }
+      },
+      "dependencies": [
+        "ssn"
+      ]
     },
     {
-      "name": "postal-code",
-      "type": "text",
-      "html": {
-        "label": "Social Security Number",
-        "placeholder": "123456-123K"
-      },
+      "name": "childrenGroup",
+      "type": "group",
       "constraints": {
-        "pattern": "[0-9]{5}"
-      }
+        "maxlength": 5
+      },
+      "fields": [
+        {
+          "name": "firstName",
+          "type": "text",
+          "html": {
+            "label": "First name",
+            "placeholder": "First name"
+          },
+          "constraints": {
+            "required": true,
+            "maxlength": 10
+          }
+        },
+        {
+          "name": "lastName",
+          "type": "text",
+          "html": {
+            "label": "Last name",
+            "placeholder": "Last name"
+          },
+          "constraints": {
+            "required": true,
+            "maxlength": 10
+          }
+        },
+        {
+          "name": "age",
+          "type": "number",
+          "html": {
+            "label": "Age",
+            "placeholder": "Age"
+          },
+          "constraints": {
+            "max": 125,
+            "min": 15
+          }
+        }
+      ]
     }
   ]
 }

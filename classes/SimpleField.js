@@ -7,8 +7,9 @@ class SimpleField extends AbstractField {
     this.type = specification.type;
   }
 
-  validate(value, dependencies) {
-    return super.validate(value, dependencies);
+  async validate(value, dependencies) {
+    const validity = await super.validate(value, dependencies);
+    return validity;
   }
 }
 

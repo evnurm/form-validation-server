@@ -16,44 +16,44 @@ describe('SimpleField', () => {
     expect(typeof field.validate).toBe('function');
   });
 
-  it('validates multiple constraints correctly', () => {
+  it('validates multiple constraints correctly', async () => {
     const field = new SimpleField(spec);
-    expect(field.validate('a'.repeat(4)).validity).toBe(false);
-    expect(field.validate('a'.repeat(5)).validity).toBe(true);
-    expect(field.validate('a'.repeat(6)).validity).toBe(true);
+    expect((await field.validate('a'.repeat(4))).validity).toBe(false);
+    expect((await field.validate('a'.repeat(5))).validity).toBe(true);
+    expect((await field.validate('a'.repeat(6))).validity).toBe(true);
 
-    expect(field.validate('a'.repeat(9)).validity).toBe(true);
-    expect(field.validate('a'.repeat(10)).validity).toBe(true);
-    expect(field.validate('a'.repeat(11)).validity).toBe(false);
+    expect((await field.validate('a'.repeat(9))).validity).toBe(true);
+    expect((await field.validate('a'.repeat(10))).validity).toBe(true);
+    expect((await field.validate('a'.repeat(11))).validity).toBe(false);
   });
 
-  it('requires a field if required = true', () => {
+  it('requires a field if required = true', async () => {
     const field = new SimpleField({ ...spec, constraints: { ...spec.constraints, required: true } });
-    let validityState = field.validate('');
+    let validityState = await field.validate('');
     expect(validityState.validity).toBe(false);
     expect(validityState.errors).toContain('required');
 
-    validityState = field.validate('a'.repeat(5));
+    validityState = await field.validate('a'.repeat(5));
     expect(validityState.validity).toBe(true);
     expect(validityState.errors).not.toContain('required');
   });
 
-  it('does not require a field if required has not been set', () => {
+  it('does not require a field if required has not been set', async () => {
     const field = new SimpleField(spec);
-    let validityState = field.validate(undefined);
+    let validityState = await field.validate(undefined);
     expect(validityState.validity).toBe(true);
 
-    validityState = field.validate('12345');
+    validityState = await field.validate('12345');
     expect(validityState.validity).toBe(true);
   });
 
-  it('validates a non-mandatory field if a value has been given', () => {
+  it('validates a non-mandatory field if a value has been given', async () => {
     const field = new SimpleField(spec);
-    let validityState = field.validate('1234');
+    let validityState = await field.validate('1234');
     expect(validityState.validity).toBe(false);
   });
 
-  it('interprets a complex required condition correctly', () => {
+  it('interprets a complex required condition correctly', async () => {
     const specification = {
       ...spec,
       constraints: {
@@ -65,14 +65,14 @@ describe('SimpleField', () => {
     };
     const field = new SimpleField(specification);
 
-    expect(field.validate(undefined, { age: { value: 17, fieldType: 'number' }}).validity).toBe(true);
-    expect(field.validate(undefined, { age: { value: 18, fieldType: 'number' }}).validity).toBe(false);
-    expect(field.validate(undefined, { age: { value: 25, fieldType: 'number' }}).validity).toBe(false);
-    expect(field.validate(undefined, { age: { value: 30, fieldType: 'number' }}).validity).toBe(false);
-    expect(field.validate(undefined, { age: { value: 31, fieldType: 'number' }}).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 17, fieldType: 'number' }})).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 25, fieldType: 'number' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 30, fieldType: 'number' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 31, fieldType: 'number' }})).validity).toBe(true);
   });
 
-  it('interprets a complex required condition with dependencies on multiple fields correctly', () => {
+  it('interprets a complex required condition with dependencies on multiple fields correctly', async () => {
     const specification = {
       ...spec,
       constraints: {
@@ -84,12 +84,12 @@ describe('SimpleField', () => {
     };
     const field = new SimpleField(specification);
 
-    expect(field.validate(undefined, { age: { value: 17, fieldType: 'number' }, name: { value: 'a'.repeat(10), fieldType: 'text'}}).validity).toBe(true);
-    expect(field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(11), fieldType: 'text'}}).validity).toBe(true);
-    expect(field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(5), fieldType: 'text'}}).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 17, fieldType: 'number' }, name: { value: 'a'.repeat(10), fieldType: 'text'}})).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(11), fieldType: 'text'}})).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(5), fieldType: 'text'}})).validity).toBe(false);
   });
 
-  it('validates a single function constraint correctly', () => {
+  it('validates a single function constraint correctly', async () => {
     jest.spyOn(functionStore, 'getFunction').mockImplementation(() => (value) => {
       return value.startsWith('X');
     });
@@ -101,14 +101,14 @@ describe('SimpleField', () => {
       }
     };
     const field = new SimpleField(specification);
-    expect(field.validate('').validity).toBe(true);
-    expect(field.validate('a').validity).toBe(false);
-    expect(field.validate('aXb').validity).toBe(false);
-    expect(field.validate('X').validity).toBe(true);
-    expect(field.validate('Xabc').validity).toBe(true);
+    expect((await field.validate('')).validity).toBe(true);
+    expect((await field.validate('a')).validity).toBe(false);
+    expect((await field.validate('aXb')).validity).toBe(false);
+    expect((await field.validate('X')).validity).toBe(true);
+    expect((await field.validate('Xabc')).validity).toBe(true);
   });
 
-  it('validates multiple function constraints correctly', () => {
+  it('validates multiple function constraints correctly', async () => {
     const startsWithX = (value) => value.startsWith('X');
     const endsWithY = (value) => value.endsWith('Y');
 
@@ -130,20 +130,19 @@ describe('SimpleField', () => {
     };
 
     const field = new SimpleField(specification);
-    expect(field.validate('').validity).toBe(true);
-    expect(field.validate('a').validity).toBe(false);
-    expect(field.validate('aXb').validity).toBe(false);
-    expect(field.validate('X').validity).toBe(false);
-    expect(field.validate('Xabc').validity).toBe(false);
-    expect(field.validate('XabcY').validity).toBe(true);
-    expect(field.validate('XabcYz').validity).toBe(false);
+    expect((await field.validate('')).validity).toBe(true);
+    expect((await field.validate('a')).validity).toBe(false);
+    expect((await field.validate('aXb')).validity).toBe(false);
+    expect((await field.validate('X')).validity).toBe(false);
+    expect((await field.validate('Xabc')).validity).toBe(false);
+    expect((await field.validate('XabcY')).validity).toBe(true);
+    expect((await field.validate('XabcYz')).validity).toBe(false);
   });
 
-  it('runs form-level validators correctly', () => {
+  it('runs form-level validators correctly', async () => {
     const formLevelValidator = (value, dependencies) => {
       return dependencies.dependencyField !== value;
     };
-
     jest.spyOn(functionStore, 'getFunction').mockImplementation(() => formLevelValidator);
 
     const specification = {
@@ -155,7 +154,27 @@ describe('SimpleField', () => {
     };
 
     const field = new SimpleField(specification);
-    expect(field.validate(3, { dependencyField: { type: 'number', value: 3 }}).validity).toBe(false);
-    expect(field.validate(3, { dependencyField: { type: 'number', value: 5 }}).validity).toBe(true);
+    expect((await field.validate(3, { dependencyField: { type: 'number', value: 3 }})).validity).toBe(false);
+    expect((await field.validate(3, { dependencyField: { type: 'number', value: 5 }})).validity).toBe(true);
   });
+
+  it('runs synchronous and non-synchronous custom validators', async () => {
+    const validator1 = (value) => value < 11;
+    const validator2 = (value) => new Promise((resolve) => resolve(value > 9));
+
+    jest.spyOn(functionStore, 'getFunction').mockImplementation((functionName) =>  functionName === 'validator1' ? validator1 : validator2);
+
+    const specification = {
+      ...spec,
+      constraints: {
+        serverSideFunctions: ['validator1', 'validator2']
+      },
+      dependencies: ['dependencyField']
+    };
+    const field = new SimpleField(specification);
+    
+    expect((await field.validate(9)).validity).toBe(false);
+    expect((await field.validate(10)).validity).toBe(true);
+    expect((await field.validate(11)).validity).toBe(false);
+  })
 });

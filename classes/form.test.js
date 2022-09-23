@@ -1,5 +1,4 @@
 const Form = require('./form');
-const { registerFunction } = require('../functionStore/functions');
 
 const specification = {
   name: 'testForm',
@@ -18,16 +17,8 @@ const specification = {
         min: 18
       }
     }
-  ], serverSideValidators: [
-    { function: 'testPromise', promise: true },
-    { function: 'testNonPromise' }
   ]
 };
-
-beforeAll(() => {
-  registerFunction('testPromise', () => new Promise(resolve => resolve(true)))
-  registerFunction('testNonPromise', () => true);
-});
 
 describe('Form', () => {
   it('creates the correct fields', () => {
