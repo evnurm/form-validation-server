@@ -70,6 +70,7 @@ const validateTime = (value) => {
 
 module.exports = {
     [INPUT_TYPES.TEXT]: validateText,
+    [INPUT_TYPES.TEXTAREA]: validateText,
     [INPUT_TYPES.NUMBER]: validateNumber,
     [INPUT_TYPES.DATE]: validateDate,
     [INPUT_TYPES.DATETIME_LOCAL]: validateDate,
@@ -86,6 +87,7 @@ module.exports = {
     [INPUT_TYPES.PASSWORD]: validateText,
     [INPUT_TYPES.RANGE]: validateNumber,
     [INPUT_TYPES.SEARCH]: validateText,
+    [INPUT_TYPES.SELECT]: () => true,
     [INPUT_TYPES.HIDDEN]: () => true, // no limitations
     [INPUT_TYPES.GROUP]: validateGroup,
     [INPUT_TYPES.BUTTON]: () => true,
