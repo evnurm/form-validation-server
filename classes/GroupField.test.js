@@ -117,9 +117,15 @@ describe('GroupField', () => {
       { firstName: 'Second', lastName: 'Person', age: 18 }
     ])).validity).toBe(true);
 
-    expect((await field.validate([
+    const secondAgeTooLow = await field.validate([
       { firstName: 'Test', lastName: 'User', age: 26 },
       { firstName: 'Second', lastName: 'Person', age: 10 }
-    ])).validity).toBe(false);
+    ]);
+    expect(secondAgeTooLow.validity).toBe(false);
+    expect(secondAgeTooLow.errors.length).toBe(2);
+    expect(secondAgeTooLow.errors[1].firstName).toBe(undefined);
+    expect(secondAgeTooLow.errors[1].lastName).toBe(undefined);
+    expect(secondAgeTooLow.errors[1].age.length).toBe(1);
+    expect(secondAgeTooLow.errors[1].age[0]).toBe('min');
   });
 });

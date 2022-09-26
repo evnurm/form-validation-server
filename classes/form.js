@@ -1,5 +1,4 @@
 const { INPUT_TYPES } = require('../form-input-types');
-const { getFunction } = require('../functionStore/functions');
 const GroupField = require('./GroupField');
 const SimpleField = require('./SimpleField');
 
@@ -25,10 +24,12 @@ class Form {
       return field.validate(formData[field.name], dependencies);
     }));
 
-    validityStates.forEach((validityState) => {
-      if (validityState.errors.length > 0) errors[field.name] = validityState.errors;
+    validityStates.forEach(((validityState, index) => {
+      if (validityState.errors.length > 0) {
+          errors[this.fields[index].name] = validityState.errors;
+      }
       return validityState.validity;
-    });
+    }));
   
     const validity = validityStates.map(validityState => validityState.validity).every(isValid => isValid);
     return { validity, errors };

@@ -26,8 +26,11 @@ class GroupField extends AbstractField {
       const groupErrors = [];
       validityStates.forEach((instance, instanceIndex) => {
         instance.forEach((field, fieldIndex) => {
-          if (!groupErrors[instanceIndex]) groupErrors[instanceIndex] = {};
-          groupErrors[instanceIndex][this.#fields[fieldIndex].name] = field.errors;
+          if (field.errors.length > 0) {
+            if (!groupErrors[instanceIndex])
+              groupErrors[instanceIndex] = {};
+            groupErrors[instanceIndex][this.#fields[fieldIndex].name] = field.errors;
+          }
         });
         
       });
