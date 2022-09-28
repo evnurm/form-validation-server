@@ -89,6 +89,46 @@ describe('SimpleField', () => {
     expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, name: { value: 'a'.repeat(5), fieldType: 'text'}})).validity).toBe(false);
   });
 
+  it('interprets a DNF required condition correctly', async () => {
+    const specification = {
+          name: 'guardianSsn',
+          type: 'text', 
+          constraints: {
+            required: [
+              [
+                { type: 'max', value: 17, field: 'age' }
+              ],
+              [
+                { type: 'min', value: 18, field: 'age' },
+                { type: 'equals', value: true, field: 'requiresGuardian' }
+              ]
+            ]
+          }
+    };
+
+    const field = new SimpleField(specification);
+    expect((await field.validate(undefined, { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' }})).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' } })).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate(undefined, { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' } })).validity).toBe(false);
+    expect((await field.validate(undefined, { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' } })).validity).toBe(true);
+
+    // Required validity = true if a value is given
+    expect((await field.validate('test', { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' }})).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' }})).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 17, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' }})).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 18, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: false, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: true, fieldType: 'radio-group' } })).validity).toBe(true);
+    expect((await field.validate('test', { age: { value: 19, fieldType: 'number' }, requiresGuardian: { value: undefined, fieldType: 'radio-group' } })).validity).toBe(true);
+  });
+
   it('validates a single function constraint correctly', async () => {
     jest.spyOn(functionStore, 'getFunction').mockImplementation(() => (value) => {
       return value.startsWith('X');

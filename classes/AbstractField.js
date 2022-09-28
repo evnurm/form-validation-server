@@ -6,7 +6,12 @@ const getDependencies = (specification) => {
   const required = specification?.constraints?.required;
   let dependencies = new Set(specification?.dependencies);
   if (Array.isArray(required)) {
-    required.map(constraint => constraint.field).filter(dep => dep).forEach(dep => dependencies.add(dep));
+    const isDNFCondition = required.map(elem => Array.isArray(elem)).every(x => x);
+    if (isDNFCondition) { 
+      required.map(clause => clause.map((constraint) => constraint.field).forEach(dep => dependencies.add(dep)));
+    } else {
+      required.map(constraint => constraint.field).filter(dep => dep).forEach(dep => dependencies.add(dep));
+    }
   }
   return dependencies;
 };
@@ -21,7 +26,6 @@ class AbstractField {
 
   #checkRequiredValidity = (value, dependencies) => {
     const requiredCondition = this.constraints?.required;
-    
     if (!requiredCondition)
       return true;
     

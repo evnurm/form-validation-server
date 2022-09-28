@@ -1,4 +1,5 @@
 const { INPUT_TYPES } = require('../form-input-types');
+const { checkDNFRequiredCondition, checkArrayRequiredCondition } = require('../util/helpers');
 
 const validateStringMaxLength = (value, limit) => {
   return value?.length <= limit;
@@ -116,12 +117,12 @@ const validateOneOf = (value, constraintValue) => constraintValue.map(option => 
 const validateValues = ({ value, constraintValue, type }) => {
   switch (type) {
     case INPUT_TYPES.RADIO_GROUP:
-    case INPUT_TYPES.SELECT: return validateOneOf(value, constraintValue);
+    case INPUT_TYPES.SELECT:
+      return validateOneOf(value, constraintValue);
     case INPUT_TYPES.CHECKBOX_GROUP: return validateValuesInSet(value, constraintValue);
     default: throw new Error('values constraint is not supported for type ' + type);
   }
 };
-
 
 const validateRequired = ({ value, constraintValue, dependencies }) => {
   // Handle boolean values
@@ -130,16 +131,21 @@ const validateRequired = ({ value, constraintValue, dependencies }) => {
   }
 
   // Handle array of conditions for a field being required
-  const constraintValidities = constraintValue.map(constraint => {
-    const { type, value, field } = constraint;
-    const func = validators[type];
-    const dependency = dependencies[field];
-    return func({ value: dependency?.value, constraintValue: value, type: dependency['fieldType'] });
-  });
-  const allValid = constraintValidities.every(validity => validity);
-
-  return !allValid ? true : Boolean(value);
+  if (Array.isArray(constraintValue)) {
+    let isRequired;
+    const isDNFCondition = constraintValue.map(elem => Array.isArray(elem)).every(x => x);
+    if (isDNFCondition) {
+      isRequired = checkDNFRequiredCondition(constraintValue, dependencies, validators);
+    } else {
+      isRequired = checkArrayRequiredCondition(constraintValue, dependencies, validators);
+    }
+    return isRequired ? (Boolean(value) || value === 0) : true;
+  }
+  throw new Error('Invalid required condition')
 };
+
+const validateEquals = ({ value, constraintValue }) => value === constraintValue;
+
 
 const validators = {
   'maxlength': validateMaxLength,
@@ -149,7 +155,8 @@ const validators = {
   'step': validateStep,
   'pattern': validatePattern,
   'values': validateValues,
-  'required': validateRequired
+  'required': validateRequired,
+  'equals': validateEquals
 };
 
 module.exports = validators;
