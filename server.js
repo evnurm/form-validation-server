@@ -5,6 +5,9 @@ const PORT = 3001;
 const formValidator = require('./formValidator');
 const { validateSsn, validateGuardianSsn } = require('./custom-validators/ssn');
 
+const form = require('./form.json');
+
+formValidator.registerForm(form);
 formValidator.registerFunction('validateSsn', validateSsn);
 formValidator.registerFunction('validateGuardianSsn', validateGuardianSsn);
 
