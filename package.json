@@ -2,7 +2,7 @@
   "name": "form-validation-server",
   "version": "1.0.0",
   "description": "Express server for testing form validation library\"",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "test": "jest",
