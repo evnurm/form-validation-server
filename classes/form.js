@@ -17,21 +17,30 @@ class Form {
 
   async validate(request) {
     const formData = request.body;
+    
+    let validityStates;
     const errors = {};
-    const validityStates = await Promise.all(this.fields.map(field => {
+    
+    // Detect fields that do not exist in field specification 
+    const keys = this.fields.map(field => field.name);
+    const unknownKeys = Object.keys(formData).filter(key => !keys.includes(key));
+    unknownKeys.forEach(key => errors[key] = 'Unrecognized field');
+
+    // Validate individual fields
+    validityStates = await Promise.all(this.fields.map(field => {
       const dependencies = {};
       field.dependencies.forEach(dep => dependencies[dep] = { value: formData[dep], fieldType: this.fields.find(field => field.name === dep)?.type });
       return field.validate(formData[field.name], dependencies);
     }));
 
+    // Add field errors to errors object
     validityStates.forEach(((validityState, index) => {
       if (validityState.errors.length > 0) {
-          errors[this.fields[index].name] = validityState.errors;
+        errors[this.fields[index].name] = validityState.errors;
       }
-      return validityState.validity;
     }));
   
-    const validity = validityStates.map(validityState => validityState.validity).every(isValid => isValid);
+    const validity = unknownKeys.length === 0 && validityStates.map(validityState => validityState.validity).every(isValid => isValid);
     return { validity, errors };
   }
 }
